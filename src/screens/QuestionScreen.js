@@ -112,19 +112,50 @@ export default function QuestionScreen() {
   };
 
   const callGemini = async (contents) => {
+    if (!GEMINI_API_KEY) {
+      throw new Error('API anahtari bulunamadi. .env dosyasini kontrol et.');
+    }
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents }),
       }
     );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMsg = errorData?.error?.message || `HTTP ${response.status}`;
+      console.error('Gemini API hatasi:', response.status, errorMsg);
+      if (response.status === 400) {
+        throw new Error('Fotograf isle nemedi. Daha net bir fotograf cek.');
+      } else if (response.status === 401 || response.status === 403) {
+        throw new Error('API anahtari gecersiz. Gemini API anahtarini kontrol et.');
+      } else if (response.status === 429) {
+        throw new Error('Cok fazla istek gonderildi. Biraz bekle ve tekrar dene.');
+      }
+      throw new Error(`API hatasi: ${errorMsg}`);
+    }
+
     const data = await response.json();
-    if (data.candidates && data.candidates[0]) {
+
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       return data.candidates[0].content.parts[0].text;
     }
-    return null;
+
+    // Icerik filtrelenmis olabilir
+    if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+      throw new Error('Bu icerik guvenlik filtresi nedeniyle islenemedi. Baska bir fotograf dene.');
+    }
+
+    if (data.promptFeedback?.blockReason) {
+      throw new Error('Fotograf reddedildi: ' + data.promptFeedback.blockReason);
+    }
+
+    console.error('Beklenmeyen API yaniti:', JSON.stringify(data).substring(0, 500));
+    throw new Error('AI yanit urete medi. Fotografi tekrar yukle.');
   };
 
   const processAiResponse = (qs, index, rawText) => {
@@ -145,17 +176,12 @@ export default function QuestionScreen() {
           { inline_data: { mime_type: 'image/jpeg', data: qs[index].base64 } }
         ]
       }]);
-      if (text) {
-        const updated = processAiResponse(qs, index, text);
-        setQuestions(updated);
-      } else {
-        const updated = [...qs];
-        updated[index].explanation = 'Bir hata olustu. Fotografi tekrar yukle.';
-        setQuestions(updated);
-      }
-    } catch {
+      const updated = processAiResponse(qs, index, text);
+      setQuestions(updated);
+    } catch (err) {
+      console.error('Soru analiz hatasi:', err);
       const updated = [...qs];
-      updated[index].explanation = 'Baglanti hatasi. Interneti kontrol et.';
+      updated[index].explanation = err.message || 'Bilinmeyen bir hata olustu.';
       setQuestions(updated);
     }
     setLoading(false);
@@ -176,13 +202,10 @@ export default function QuestionScreen() {
             { inline_data: { mime_type: 'image/jpeg', data: qs[i].base64 } }
           ]
         }]);
-        if (text) {
-          updated = processAiResponse(updated, i, text);
-        } else {
-          updated[i].explanation = 'Bu soru cozulemedi.';
-        }
-      } catch {
-        updated[i].explanation = 'Baglanti hatasi. Bu soru atlanildi.';
+        updated = processAiResponse(updated, i, text);
+      } catch (err) {
+        console.error(`Soru ${i + 1} hatasi:`, err);
+        updated[i].explanation = err.message || 'Bu soru cozulemedi.';
       }
       setQuestions([...updated]);
     }
@@ -252,8 +275,9 @@ export default function QuestionScreen() {
         updated[currentIndex].chat.push({ role: 'ai', text: cleanText });
         setQuestions([...updated]);
       }
-    } catch {
-      updated[currentIndex].chat.push({ role: 'ai', text: 'Baglanti hatasi. Tekrar dene.' });
+    } catch (err) {
+      console.error('Chat hatasi:', err);
+      updated[currentIndex].chat.push({ role: 'ai', text: err.message || 'Baglanti hatasi. Tekrar dene.' });
       setQuestions([...updated]);
     }
 
