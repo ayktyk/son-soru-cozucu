@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "yks-koc-temp",
-    "slug": "yks-koc-temp",
+    "name": "YKS Koc",
+    "slug": "yks-koc",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +20,17 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.ayktyk.ykskoc"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4fcca0ec-e85f-4563-87bb-bc406c8a7056"
+      }
+    },
+    "owner": "ayktyk"
   }
 }
