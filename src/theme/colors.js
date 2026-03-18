@@ -1,0 +1,18 @@
+export const colors = {
+  background: '#041E42',
+  backgroundAlt: '#082A5E',
+  surface: '#0D3472',
+  surfaceAlt: '#15448F',
+  input: '#0A2B61',
+  primary: '#F6D30A',
+  primarySoft: '#FFE36A',
+  primaryMuted: '#D8B72D',
+  text: '#FFF9DB',
+  textMuted: '#D6E0F5',
+  textSubtle: '#AFC1E6',
+  border: '#2E57A1',
+  overlay: '#061730',
+  success: '#F6D30A',
+  danger: '#8FB3F4',
+  buttonText: '#041E42',
+};

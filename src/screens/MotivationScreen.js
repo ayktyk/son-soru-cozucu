@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { quotes } from '../data/quotes';
+import { colors } from '../theme/colors';
 
 export default function MotivationScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Motivasyon</Text>
-      <Text style={styles.subtitle}>Gucune guc katacak sozler</Text>
+      <Text style={styles.subtitle}>Sari lacivert ritimle devam et</Text>
 
       <FlatList
         data={quotes}
@@ -17,7 +18,7 @@ export default function MotivationScreen() {
           <View style={styles.card}>
             <Text style={styles.emoji}>{item.emoji}</Text>
             <Text style={styles.quoteText}>"{item.text}"</Text>
-            <Text style={styles.author}>— {item.author}</Text>
+            <Text style={styles.author}>- {item.author}</Text>
           </View>
         )}
       />
@@ -28,23 +29,25 @@ export default function MotivationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
     padding: 20,
     paddingTop: 60,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#00D4FF',
+    color: colors.primary,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#AAAAAA',
+    color: colors.textMuted,
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -55,14 +58,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   quoteText: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 6,
   },
   author: {
-    color: '#FFD700',
+    color: colors.primarySoft,
     fontSize: 12,
   },
 });

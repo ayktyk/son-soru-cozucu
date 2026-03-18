@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getTodayQuote } from '../data/quotes';
+import { colors } from '../theme/colors';
 
 export default function HomeScreen({ navigation }) {
   const quote = getTodayQuote();
@@ -8,12 +9,12 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>YKS KOC</Text>
-      <Text style={styles.subtitle}>Bugün de fethediyoruz!</Text>
+      <Text style={styles.subtitle}>Bugun de asiliyoruz!</Text>
 
       <View style={styles.quoteBox}>
         <Text style={styles.quoteEmoji}>{quote.emoji}</Text>
         <Text style={styles.quoteText}>"{quote.text}"</Text>
-        <Text style={styles.quoteAuthor}>— {quote.author}</Text>
+        <Text style={styles.quoteAuthor}>- {quote.author}</Text>
       </View>
 
       <TouchableOpacity
@@ -45,7 +46,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -53,16 +54,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#00D4FF',
+    color: colors.primary,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#AAAAAA',
+    color: colors.textMuted,
     marginBottom: 30,
   },
   quoteBox: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 16,
     padding: 20,
     marginBottom: 40,
@@ -75,18 +78,18 @@ const styles = StyleSheet.create({
   },
   quoteText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: colors.text,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 8,
   },
   quoteAuthor: {
     fontSize: 13,
-    color: '#FFD700',
+    color: colors.primarySoft,
     textAlign: 'center',
   },
   mainButton: {
-    backgroundColor: '#00D4FF',
+    backgroundColor: colors.primary,
     paddingVertical: 16,
     paddingHorizontal: 48,
     borderRadius: 12,
@@ -97,7 +100,7 @@ const styles = StyleSheet.create({
   mainButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0D0D0D',
+    color: colors.buttonText,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -106,15 +109,15 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#333333',
+    borderColor: colors.border,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: colors.text,
   },
 });

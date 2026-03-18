@@ -7,6 +7,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { callGeminiApi } from '../config/api';
 import { supabase } from '../config/supabase';
+import { colors } from '../theme/colors';
 
 const SYSTEM_PROMPT = `Sen YKS'ye hazirlanan bir lise ogrencisinin en iyi arkadasisin.
 Gorevin bu soruyu cozmek degil, OGRENCININ anlayip kendisi cozmesini saglamak.
@@ -42,7 +43,6 @@ export default function QuestionScreen() {
 
   const currentQ = questions[currentIndex] || null;
 
-  // AI cevabindan ders ve konu bilgisini ayikla
   const parseSubjectTopic = (text) => {
     const match = text.match(/\[KONU:\s*(.+?)\s*>\s*(.+?)\s*\]/);
     if (match) {
@@ -168,7 +168,6 @@ export default function QuestionScreen() {
     setBatchProgress('');
   };
 
-  // Dogru/Yanlis kaydet
   const saveResult = async (isCorrect) => {
     if (!currentQ || currentQ.saved) return;
 
@@ -184,7 +183,7 @@ export default function QuestionScreen() {
         ai_explanation: currentQ.explanation.substring(0, 2000),
       });
     } catch {
-      // Sessizce devam et — offline olabilir
+      // Sessizce devam et
     }
   };
 
@@ -258,7 +257,7 @@ export default function QuestionScreen() {
       >
         <Text style={styles.title}>Soru Coz</Text>
         <Text style={styles.subtitle}>
-          Tek fotograf cek veya galeriden birden fazla sec!
+          Tek fotograf cek veya galeriden birden fazla sec
         </Text>
 
         <View style={styles.buttonRow}>
@@ -296,7 +295,7 @@ export default function QuestionScreen() {
 
         {processingBatch && (
           <View style={styles.progressBox}>
-            <ActivityIndicator size="small" color="#FFD700" />
+            <ActivityIndicator size="small" color={colors.primary} />
             <Text style={styles.progressText}>{batchProgress}</Text>
           </View>
         )}
@@ -307,14 +306,13 @@ export default function QuestionScreen() {
 
         {loading && !processingBatch && (
           <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color="#00D4FF" />
+            <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.loadingText}>AI dusunuyor...</Text>
           </View>
         )}
 
         {currentQ && currentQ.explanation !== '' && (
           <>
-            {/* Ders/Konu etiketi */}
             {currentQ.subject !== '' && (
               <View style={styles.topicTag}>
                 <Text style={styles.topicTagText}>
@@ -328,7 +326,6 @@ export default function QuestionScreen() {
               <Text style={styles.explanationText}>{currentQ.explanation}</Text>
             </View>
 
-            {/* Dogru/Yanlis butonlari */}
             {!currentQ.saved && !processingBatch && (
               <View style={styles.resultRow}>
                 <Text style={styles.resultLabel}>Bu soruyu dogru mu yapmistin?</Text>
@@ -337,13 +334,13 @@ export default function QuestionScreen() {
                     style={[styles.resultButton, styles.correctButton]}
                     onPress={() => saveResult(true)}
                   >
-                    <Text style={styles.resultButtonText}>Dogru yaptim</Text>
+                    <Text style={[styles.resultButtonText, styles.correctButtonText]}>Dogru yaptim</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.resultButton, styles.wrongButton]}
                     onPress={() => saveResult(false)}
                   >
-                    <Text style={styles.resultButtonText}>Yanlis yaptim</Text>
+                    <Text style={[styles.resultButtonText, styles.wrongButtonText]}>Yanlis yaptim</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -351,7 +348,7 @@ export default function QuestionScreen() {
 
             {currentQ.saved && (
               <View style={styles.savedBox}>
-                <Text style={styles.savedText}>Kaydedildi! Istatistiklerinde gorunecek.</Text>
+                <Text style={styles.savedText}>Kaydedildi. Istatistiklerinde gorunecek.</Text>
               </View>
             )}
           </>
@@ -374,7 +371,7 @@ export default function QuestionScreen() {
 
         {chatLoading && (
           <View style={styles.loadingBox}>
-            <ActivityIndicator size="small" color="#00D4FF" />
+            <ActivityIndicator size="small" color={colors.primary} />
             <Text style={styles.loadingText}>Cevap yaziliyor...</Text>
           </View>
         )}
@@ -387,7 +384,7 @@ export default function QuestionScreen() {
           <TextInput
             style={styles.chatInput}
             placeholder="Anlamadigin yeri sor..."
-            placeholderTextColor="#666"
+            placeholderTextColor={colors.textSubtle}
             value={chatMessage}
             onChangeText={setChatMessage}
             multiline
@@ -406,54 +403,128 @@ export default function QuestionScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D0D' },
+  container: { flex: 1, backgroundColor: colors.background },
   scroll: { flex: 1 },
   content: { padding: 20, paddingTop: 10 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#00D4FF', marginBottom: 4 },
-  subtitle: { fontSize: 14, color: '#AAAAAA', marginBottom: 20 },
+  title: { fontSize: 28, fontWeight: 'bold', color: colors.primary, marginBottom: 4 },
+  subtitle: { fontSize: 14, color: colors.textMuted, marginBottom: 20 },
   buttonRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   pickButton: {
-    flex: 1, backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: '#00D4FF',
-    paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  pickButtonText: { color: '#00D4FF', fontSize: 15, fontWeight: '600' },
+  pickButtonText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
   navRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, gap: 16 },
-  navButton: { backgroundColor: '#1A1A1A', paddingVertical: 8, paddingHorizontal: 20, borderRadius: 8, borderWidth: 1, borderColor: '#333' },
+  navButton: {
+    backgroundColor: colors.surface,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   navDisabled: { opacity: 0.3 },
-  navButtonText: { color: '#FFFFFF', fontSize: 14 },
-  navCounter: { color: '#FFD700', fontSize: 16, fontWeight: 'bold' },
-  progressBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#1A1A1A', padding: 12, borderRadius: 8, marginBottom: 16, gap: 10 },
-  progressText: { color: '#FFD700', fontSize: 14 },
-  preview: { width: '100%', height: 250, borderRadius: 12, marginBottom: 16, backgroundColor: '#1A1A1A' },
+  navButtonText: { color: colors.text, fontSize: 14 },
+  navCounter: { color: colors.primarySoft, fontSize: 16, fontWeight: 'bold' },
+  progressBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    gap: 10,
+  },
+  progressText: { color: colors.primarySoft, fontSize: 14 },
+  preview: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    marginBottom: 16,
+    backgroundColor: colors.surface,
+  },
   loadingBox: { alignItems: 'center', paddingVertical: 20 },
-  loadingText: { color: '#AAAAAA', marginTop: 8, fontSize: 14 },
-  topicTag: { backgroundColor: '#1A1A2E', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, alignSelf: 'flex-start', marginBottom: 8 },
-  topicTagText: { color: '#FFD700', fontSize: 13, fontWeight: '600' },
-  explanationBox: { backgroundColor: '#1A1A1A', borderRadius: 12, padding: 16, marginBottom: 12 },
-  explanationLabel: { color: '#00D4FF', fontSize: 13, fontWeight: '600', marginBottom: 8 },
-  explanationText: { color: '#FFFFFF', fontSize: 15, lineHeight: 24 },
-  resultRow: { backgroundColor: '#1A1A1A', borderRadius: 12, padding: 16, marginBottom: 12, alignItems: 'center' },
-  resultLabel: { color: '#AAAAAA', fontSize: 14, marginBottom: 12 },
+  loadingText: { color: colors.textMuted, marginTop: 8, fontSize: 14 },
+  topicTag: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  topicTagText: { color: colors.buttonText, fontSize: 13, fontWeight: '600' },
+  explanationBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  explanationLabel: { color: colors.primary, fontSize: 13, fontWeight: '600', marginBottom: 8 },
+  explanationText: { color: colors.text, fontSize: 15, lineHeight: 24 },
+  resultRow: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  resultLabel: { color: colors.textMuted, fontSize: 14, marginBottom: 12 },
   resultButtons: { flexDirection: 'row', gap: 12, width: '100%' },
   resultButton: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  correctButton: { backgroundColor: '#1B5E20' },
-  wrongButton: { backgroundColor: '#B71C1C' },
-  resultButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  savedBox: { backgroundColor: '#1A2E1A', borderRadius: 8, padding: 10, marginBottom: 12, alignItems: 'center' },
-  savedText: { color: '#66BB6A', fontSize: 13 },
+  correctButton: { backgroundColor: colors.primary },
+  wrongButton: { backgroundColor: colors.backgroundAlt, borderWidth: 1, borderColor: colors.primarySoft },
+  resultButtonText: { fontSize: 15, fontWeight: '600' },
+  correctButtonText: { color: colors.buttonText },
+  wrongButtonText: { color: colors.text },
+  savedBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primaryMuted,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  savedText: { color: colors.primarySoft, fontSize: 13 },
   chatSection: { marginBottom: 12 },
   chatBubble: { borderRadius: 12, padding: 12, marginBottom: 8, maxWidth: '85%' },
-  userBubble: { backgroundColor: '#00D4FF', alignSelf: 'flex-end' },
-  aiBubble: { backgroundColor: '#1A1A1A', alignSelf: 'flex-start' },
-  chatText: { color: '#FFFFFF', fontSize: 14, lineHeight: 22 },
-  userChatText: { color: '#0D0D0D' },
+  userBubble: { backgroundColor: colors.primary, alignSelf: 'flex-end' },
+  aiBubble: { backgroundColor: colors.surface, alignSelf: 'flex-start' },
+  chatText: { color: colors.text, fontSize: 14, lineHeight: 22 },
+  userChatText: { color: colors.buttonText },
   chatInputRow: {
-    flexDirection: 'row', alignItems: 'flex-end', padding: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    padding: 12,
     paddingBottom: Platform.OS === 'ios' ? 30 : 12,
-    backgroundColor: '#111111', borderTopWidth: 1, borderTopColor: '#222', gap: 8,
+    backgroundColor: colors.overlay,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 8,
   },
-  chatInput: { flex: 1, backgroundColor: '#1A1A1A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 15, maxHeight: 100 },
-  sendButton: { backgroundColor: '#00D4FF', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 20 },
+  chatInput: {
+    flex: 1,
+    backgroundColor: colors.input,
+    borderRadius: 12,
+    padding: 12,
+    color: colors.text,
+    fontSize: 15,
+    maxHeight: 100,
+  },
+  sendButton: { backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 20 },
   sendDisabled: { opacity: 0.4 },
-  sendButtonText: { color: '#0D0D0D', fontWeight: 'bold', fontSize: 15 },
+  sendButtonText: { color: colors.buttonText, fontWeight: 'bold', fontSize: 15 },
 });

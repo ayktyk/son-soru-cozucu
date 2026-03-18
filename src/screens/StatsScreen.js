@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../config/supabase';
+import { colors } from '../theme/colors';
 
 export default function StatsScreen() {
   const [stats, setStats] = useState([]);
@@ -18,7 +19,6 @@ export default function StatsScreen() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      // Ders bazli istatistik
       const { data, error } = await supabase
         .from('sessions')
         .select('subject, topic, is_correct');
@@ -36,7 +36,6 @@ export default function StatsScreen() {
       setTotalSolved(data.length);
       setTotalCorrect(data.filter((d) => d.is_correct).length);
 
-      // Konu bazli gruplama
       const grouped = {};
       for (const row of data) {
         const key = `${row.subject} > ${row.topic}`;
@@ -47,7 +46,6 @@ export default function StatsScreen() {
         if (!row.is_correct) grouped[key].wrong++;
       }
 
-      // Yanlis sayisina gore sirala
       const sorted = Object.values(grouped).sort((a, b) => b.wrong - a.wrong);
       setStats(sorted);
     } catch {
@@ -58,15 +56,15 @@ export default function StatsScreen() {
 
   const getBarColor = (wrong, total) => {
     const ratio = wrong / total;
-    if (ratio >= 0.7) return '#F44336'; // Kirmizi — cok zayif
-    if (ratio >= 0.4) return '#FF9800'; // Turuncu — dikkat
-    return '#4CAF50'; // Yesil — iyi
+    if (ratio >= 0.7) return colors.primary;
+    if (ratio >= 0.4) return colors.primaryMuted;
+    return colors.danger;
   };
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#00D4FF" style={{ marginTop: 100 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
       </View>
     );
   }
@@ -75,10 +73,10 @@ export default function StatsScreen() {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Istatistikler</Text>
-        <Text style={styles.subtitle}>Soru cozdukce burada zayif konularin gorunecek</Text>
+        <Text style={styles.subtitle}>Soru cozdikce burada odaklanman gereken yerler gorunecek</Text>
         <View style={styles.emptyBox}>
           <Text style={styles.emptyEmoji}>📊</Text>
-          <Text style={styles.emptyText}>Henuz veri yok. Ilk soruyu cozerek basla!</Text>
+          <Text style={styles.emptyText}>Henuz veri yok. Ilk soruyu cozerek basla.</Text>
         </View>
       </View>
     );
@@ -91,30 +89,28 @@ export default function StatsScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Istatistikler</Text>
 
-      {/* Ozet kartlar */}
       <View style={styles.summaryRow}>
         <View style={styles.summaryCard}>
           <Text style={styles.summaryNumber}>{totalSolved}</Text>
           <Text style={styles.summaryLabel}>Toplam Soru</Text>
         </View>
         <View style={styles.summaryCard}>
-          <Text style={[styles.summaryNumber, { color: '#4CAF50' }]}>{totalCorrect}</Text>
+          <Text style={[styles.summaryNumber, { color: colors.primary }]}>{totalCorrect}</Text>
           <Text style={styles.summaryLabel}>Dogru</Text>
         </View>
         <View style={styles.summaryCard}>
-          <Text style={[styles.summaryNumber, { color: '#F44336' }]}>{totalSolved - totalCorrect}</Text>
+          <Text style={[styles.summaryNumber, { color: colors.danger }]}>{totalSolved - totalCorrect}</Text>
           <Text style={styles.summaryLabel}>Yanlis</Text>
         </View>
         <View style={styles.summaryCard}>
-          <Text style={[styles.summaryNumber, { color: '#FFD700' }]}>%{successRate}</Text>
+          <Text style={[styles.summaryNumber, { color: colors.primarySoft }]}>%{successRate}</Text>
           <Text style={styles.summaryLabel}>Basari</Text>
         </View>
       </View>
 
-      {/* Zayif konular — odaklan */}
       {weakTopics.length > 0 && (
         <View style={styles.weakSection}>
-          <Text style={styles.sectionTitle}>Bunlara Odaklan!</Text>
+          <Text style={styles.sectionTitle}>Bunlara Odaklan</Text>
           {weakTopics.map((item, i) => (
             <View key={i} style={styles.weakCard}>
               <View style={styles.weakHeader}>
@@ -141,7 +137,6 @@ export default function StatsScreen() {
         </View>
       )}
 
-      {/* Tum konular */}
       <Text style={styles.sectionTitle}>Tum Konular</Text>
       {stats.map((item, i) => {
         const correctCount = item.total - item.wrong;
@@ -165,42 +160,67 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D0D', padding: 20, paddingTop: 10 },
+  container: { flex: 1, backgroundColor: colors.background, padding: 20, paddingTop: 10 },
   content: { paddingBottom: 30 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#00D4FF', marginBottom: 16 },
-  subtitle: { fontSize: 14, color: '#AAAAAA', marginBottom: 30 },
+  title: { fontSize: 28, fontWeight: 'bold', color: colors.primary, marginBottom: 16 },
+  subtitle: { fontSize: 14, color: colors.textMuted, marginBottom: 30 },
 
-  // Ozet
   summaryRow: { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  summaryCard: { flex: 1, backgroundColor: '#1A1A1A', borderRadius: 12, padding: 12, alignItems: 'center' },
-  summaryNumber: { fontSize: 24, fontWeight: 'bold', color: '#00D4FF' },
-  summaryLabel: { fontSize: 11, color: '#888', marginTop: 4 },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  summaryNumber: { fontSize: 24, fontWeight: 'bold', color: colors.primary },
+  summaryLabel: { fontSize: 11, color: colors.textSubtle, marginTop: 4 },
 
-  // Zayif konular
   weakSection: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFD700', marginBottom: 12 },
-  weakCard: { backgroundColor: '#1A1A1A', borderRadius: 12, padding: 14, marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: colors.primarySoft, marginBottom: 12 },
+  weakCard: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+  },
   weakHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  weakRank: { fontSize: 20, fontWeight: 'bold', color: '#F44336' },
-  weakSubject: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
-  weakTopic: { fontSize: 13, color: '#AAAAAA' },
-  weakCount: { fontSize: 13, color: '#F44336', fontWeight: '600' },
-  barBg: { height: 8, backgroundColor: '#333', borderRadius: 4, overflow: 'hidden' },
+  weakRank: { fontSize: 20, fontWeight: 'bold', color: colors.primary },
+  weakSubject: { fontSize: 15, fontWeight: '600', color: colors.text },
+  weakTopic: { fontSize: 13, color: colors.textMuted },
+  weakCount: { fontSize: 13, color: colors.primarySoft, fontWeight: '600' },
+  barBg: { height: 8, backgroundColor: colors.overlay, borderRadius: 4, overflow: 'hidden' },
   barFill: { height: 8, borderRadius: 4 },
 
-  // Tum konular
   topicRow: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#1A1A1A', borderRadius: 10, padding: 12, marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
   },
-  topicSubject: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
-  topicName: { fontSize: 12, color: '#888' },
+  topicSubject: { fontSize: 14, fontWeight: '600', color: colors.text },
+  topicName: { fontSize: 12, color: colors.textSubtle },
   topicStats: { flexDirection: 'row', gap: 10 },
-  topicCorrect: { color: '#4CAF50', fontSize: 14, fontWeight: '600' },
-  topicWrong: { color: '#F44336', fontSize: 14, fontWeight: '600' },
+  topicCorrect: { color: colors.primary, fontSize: 14, fontWeight: '600' },
+  topicWrong: { color: colors.danger, fontSize: 14, fontWeight: '600' },
 
-  // Bos durum
-  emptyBox: { backgroundColor: '#1A1A1A', borderRadius: 16, padding: 40, alignItems: 'center', marginTop: 20 },
+  emptyBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    marginTop: 20,
+  },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyText: { color: '#AAAAAA', fontSize: 15, textAlign: 'center' },
+  emptyText: { color: colors.textMuted, fontSize: 15, textAlign: 'center' },
 });
