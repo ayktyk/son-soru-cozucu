@@ -15,21 +15,23 @@ const Stack = createStackNavigator();
 
 export default function App() {
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') {
       return;
     }
 
-    document.documentElement.style.height = 'auto';
-    document.documentElement.style.overflow = 'auto';
-    document.body.style.height = 'auto';
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
     document.body.style.overflow = 'auto';
     document.body.style.webkitOverflowScrolling = 'touch';
+    document.body.style.touchAction = 'auto';
 
     const root = document.getElementById('root');
     if (root) {
-      root.style.height = 'auto';
-      root.style.minHeight = '100%';
-      root.style.display = 'block';
+      root.style.height = '100%';
+      root.style.minHeight = '100dvh';
+      root.style.display = 'flex';
+      root.style.flex = '1';
+      root.style.overflow = 'auto';
     }
   }, []);
 
@@ -45,8 +47,8 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Question" component={QuestionScreen} options={{ title: 'Soru Çöz' }} />
-        <Stack.Screen name="Stats" component={StatsScreen} options={{ title: 'İstatistikler' }} />
+        <Stack.Screen name="Question" component={QuestionScreen} options={{ title: 'Soru \u00C7\u00F6z' }} />
+        <Stack.Screen name="Stats" component={StatsScreen} options={{ title: '\u0130statistikler' }} />
         <Stack.Screen name="Motivation" component={MotivationScreen} options={{ title: 'Motivasyon' }} />
       </Stack.Navigator>
     </NavigationContainer>
