@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../config/supabase';
@@ -51,6 +51,7 @@ export default function StatsScreen() {
     } catch {
       // Sessizce devam et
     }
+
     setLoading(false);
   };
 
@@ -72,11 +73,13 @@ export default function StatsScreen() {
   if (stats.length === 0) {
     return (
       <View style={styles.centeredContainer}>
-        <Text style={styles.title}>İstatistikler</Text>
-        <Text style={styles.subtitle}>Soru çözdükçe burada odaklanman gereken yerler görünecek</Text>
+        <Text style={styles.title}>{'\u0130statistikler'}</Text>
+        <Text style={styles.subtitle}>
+          {'Soru \u00E7\u00F6zd\u00FCk\u00E7e burada odaklanman gereken yerler g\u00F6r\u00FCnecek'}
+        </Text>
         <View style={styles.emptyBox}>
-          <Text style={styles.emptyEmoji}>📊</Text>
-          <Text style={styles.emptyText}>Henüz veri yok. İlk soruyu çözerek başla.</Text>
+          <Text style={styles.emptyEmoji}>{'\u{1F4CA}'}</Text>
+          <Text style={styles.emptyText}>{'Hen\u00FCz veri yok. \u0130lk soruyu \u00E7\u00F6zerek ba\u015Fla.'}</Text>
         </View>
       </View>
     );
@@ -87,7 +90,7 @@ export default function StatsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator>
-      <Text style={styles.title}>İstatistikler</Text>
+      <Text style={styles.title}>{'\u0130statistikler'}</Text>
 
       <View style={styles.summaryRow}>
         <View style={styles.summaryCard}>
@@ -96,15 +99,15 @@ export default function StatsScreen() {
         </View>
         <View style={styles.summaryCard}>
           <Text style={[styles.summaryNumber, { color: colors.primary }]}>{totalCorrect}</Text>
-          <Text style={styles.summaryLabel}>Doğru</Text>
+          <Text style={styles.summaryLabel}>{'Do\u011Fru'}</Text>
         </View>
         <View style={styles.summaryCard}>
           <Text style={[styles.summaryNumber, { color: colors.danger }]}>{totalSolved - totalCorrect}</Text>
-          <Text style={styles.summaryLabel}>Yanlış</Text>
+          <Text style={styles.summaryLabel}>{'Yanl\u0131\u015F'}</Text>
         </View>
         <View style={styles.summaryCard}>
           <Text style={[styles.summaryNumber, { color: colors.primarySoft }]}>%{successRate}</Text>
-          <Text style={styles.summaryLabel}>Başarı</Text>
+          <Text style={styles.summaryLabel}>{'Ba\u015Far\u0131'}</Text>
         </View>
       </View>
 
@@ -119,7 +122,7 @@ export default function StatsScreen() {
                   <Text style={styles.weakSubject}>{item.subject}</Text>
                   <Text style={styles.weakTopic}>{item.topic}</Text>
                 </View>
-                <Text style={styles.weakCount}>{item.wrong}/{item.total} yanlış</Text>
+                <Text style={styles.weakCount}>{item.wrong}/{item.total} {'yanl\u0131\u015F'}</Text>
               </View>
               <View style={styles.barBg}>
                 <View
@@ -137,7 +140,7 @@ export default function StatsScreen() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Tüm Konular</Text>
+      <Text style={styles.sectionTitle}>{'T\u00FCm Konular'}</Text>
       {stats.map((item, i) => {
         const correctCount = item.total - item.wrong;
         return (
@@ -147,8 +150,8 @@ export default function StatsScreen() {
               <Text style={styles.topicName}>{item.topic}</Text>
             </View>
             <View style={styles.topicStats}>
-              <Text style={styles.topicCorrect}>{correctCount}✓</Text>
-              <Text style={styles.topicWrong}>{item.wrong}✗</Text>
+              <Text style={styles.topicCorrect}>{correctCount}{'\u2713'}</Text>
+              <Text style={styles.topicWrong}>{item.wrong}{'\u2717'}</Text>
             </View>
           </View>
         );
