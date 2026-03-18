@@ -267,6 +267,7 @@ export default function QuestionScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator
       >
         <Text style={styles.title}>Soru Coz</Text>
         <Text style={styles.subtitle}>
@@ -388,8 +389,6 @@ export default function QuestionScreen() {
             <Text style={styles.loadingText}>Cevap yaziliyor...</Text>
           </View>
         )}
-
-        <View style={{ height: 100 }} />
       </ScrollView>
 
       {currentQ && currentQ.explanation !== '' && !processingBatch && (
@@ -417,8 +416,8 @@ export default function QuestionScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scroll: { flex: 1 },
-  content: { padding: 20, paddingTop: 10 },
+  scroll: { flex: 1, minHeight: 0 },
+  content: { flexGrow: 1, padding: 20, paddingTop: 10, paddingBottom: 160 },
   title: { fontSize: 28, fontWeight: 'bold', color: colors.primary, marginBottom: 4 },
   subtitle: { fontSize: 14, color: colors.textMuted, marginBottom: 20 },
   buttonRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
@@ -522,7 +521,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 12,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 12,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 16,
     backgroundColor: colors.overlay,
     borderTopWidth: 1,
     borderTopColor: colors.border,
