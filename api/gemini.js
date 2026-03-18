@@ -64,6 +64,15 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  if (req.method === 'GET') {
+    res.status(200).json({
+      ok: true,
+      route: '/api/gemini',
+      hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
+    });
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Sadece POST destekleniyor.' });
     return;

@@ -28,6 +28,14 @@ export const callGeminiApi = async (contents) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('API rotasi bulunamadi. Vercel deployunu kontrol et.');
+    }
+
+    if (response.status >= 500) {
+      throw new Error(data?.error || 'Sunucu hatasi var. Vercel loglarini kontrol et.');
+    }
+
     throw new Error(data?.error || 'AI servisine ulasilamadi.');
   }
 
