@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getTodayQuote } from '../data/quotes';
 import { colors } from '../theme/colors';
 
@@ -7,9 +7,9 @@ export default function HomeScreen({ navigation }) {
   const quote = getTodayQuote();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>YKS KOC</Text>
-      <Text style={styles.subtitle}>Bugun de asiliyoruz!</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator>
+      <Text style={styles.title}>YKS KOÇ</Text>
+      <Text style={styles.subtitle}>Bugün de asılıyoruz!</Text>
 
       <View style={styles.quoteBox}>
         <Text style={styles.quoteEmoji}>{quote.emoji}</Text>
@@ -21,7 +21,7 @@ export default function HomeScreen({ navigation }) {
         style={styles.mainButton}
         onPress={() => navigation.navigate('Question')}
       >
-        <Text style={styles.mainButtonText}>Soru Coz</Text>
+        <Text style={styles.mainButtonText}>Soru Çöz</Text>
       </TouchableOpacity>
 
       <View style={styles.bottomRow}>
@@ -29,7 +29,7 @@ export default function HomeScreen({ navigation }) {
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('Stats')}
         >
-          <Text style={styles.secondaryButtonText}>Istatistikler</Text>
+          <Text style={styles.secondaryButtonText}>İstatistikler</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -39,7 +39,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.secondaryButtonText}>Motivasyon</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -47,9 +47,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 36,

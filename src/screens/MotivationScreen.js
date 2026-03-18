@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { quotes } from '../data/quotes';
 import { colors } from '../theme/colors';
 
@@ -7,13 +7,14 @@ export default function MotivationScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Motivasyon</Text>
-      <Text style={styles.subtitle}>Sari lacivert ritimle devam et</Text>
+      <Text style={styles.subtitle}>Sarı lacivert ritimle devam et</Text>
 
       <FlatList
+        style={styles.list}
         data={quotes}
         keyExtractor={(_, index) => index.toString()}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        showsVerticalScrollIndicator
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.emoji}>{item.emoji}</Text>
@@ -43,6 +44,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     marginBottom: 20,
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: colors.surface,

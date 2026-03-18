@@ -1,8 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, Image, ScrollView,
-  ActivityIndicator, TextInput, KeyboardAvoidingView,
-  Platform, StyleSheet
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
@@ -10,27 +17,27 @@ import { callGeminiApi } from '../config/api';
 import { supabase } from '../config/supabase';
 import { colors } from '../theme/colors';
 
-const SYSTEM_PROMPT = `Sen YKS'ye hazirlanan bir lise ogrencisinin en iyi arkadasisin.
-Gorevin bu soruyu cozmek degil, OGRENCININ anlayip kendisi cozmesini saglamak.
+const SYSTEM_PROMPT = `Sen YKS'ye hazırlanan bir lise öğrencisinin en iyi arkadaşısın.
+Görevin bu soruyu çözmek değil, ÖĞRENCİNİN anlayıp kendisi çözmesini sağlamak.
 
 KURALLARIN:
-1. Ilkokul 4. sinif ogrencisine anlatir gibi konus. Karmasik kelime kullanma.
-2. Once "Bu soru aslinda sunu soruyor:" diye basla. Soruyu cok basit anlat.
-3. Ogrenci bu konudan korkuyorsa, "Bu soru senden cok daha kolay, seni kandirmaya calisiyor" de.
-4. Adim adim coz. Her adimi numaralandir.
-5. Sonunda "Bunun gibi sorularda su numaraya dikkat et:" diye bir ipucu ver.
-6. Her zaman Turkce yaz.
-7. Sonunda emojilerle tesvik et: "Bunu anladiysan Matematigin %80'ini anladin demektir!"
-8. CEVABININ EN SON SATIRINA su formatta ders ve konu bilgisini yaz (bu satir ogrenciye gosterilmeyecek):
-   [KONU: Ders Adi > Konu Adi]
-   Ornek: [KONU: Matematik > Turev]
-   Ornek: [KONU: Fizik > Newton Kanunlari]
-   Ornek: [KONU: Turkce > Paragraf]
+1. İlkokul 4. sınıf öğrencisine anlatır gibi konuş. Karmaşık kelime kullanma.
+2. Önce "Bu soru aslında şunu soruyor:" diye başla. Soruyu çok basit anlat.
+3. Öğrenci bu konudan korkuyorsa, "Bu soru senden çok daha kolay, seni kandırmaya çalışıyor" de.
+4. Adım adım çöz. Her adımı numaralandır.
+5. Sonunda "Bunun gibi sorularda şu noktaya dikkat et:" diye bir ipucu ver.
+6. Her zaman Türkçe yaz.
+7. Sonunda emojilerle teşvik et: "Bunu anladıysan Matematiğin büyük kısmını çözdün demektir!"
+8. CEVABININ EN SON SATIRINA şu formatta ders ve konu bilgisini yaz (bu satır öğrenciye gösterilmeyecek):
+   [KONU: Ders Adı > Konu Adı]
+   Örnek: [KONU: Matematik > Türev]
+   Örnek: [KONU: Fizik > Newton Kanunları]
+   Örnek: [KONU: Türkçe > Paragraf]
 
 ASLA yapma:
-- Karmasik matematiksel gosterim kullanma
-- "Bu trivial bir soru" veya "Acikca goruluyor ki" gibi seyler soyleme
-- Ogrenciyi asagilama`;
+- Karmaşık matematiksel gösterim kullanma
+- "Bu trivial bir soru" veya "Açıkça görülüyor ki" gibi şeyler söyleme
+- Öğrenciyi aşağılama`;
 
 export default function QuestionScreen() {
   const [questions, setQuestions] = useState([]);
@@ -82,7 +89,8 @@ export default function QuestionScreen() {
         cleanText: text.replace(/\[KONU:.*?\]/, '').trim(),
       };
     }
-    return { subject: 'Diger', topic: 'Belirsiz', cleanText: text };
+
+    return { subject: 'Diğer', topic: 'Belirsiz', cleanText: text };
   };
 
   const pickImages = async () => {
@@ -138,15 +146,15 @@ export default function QuestionScreen() {
       const text = await callGeminiApi([{
         parts: [
           { text: SYSTEM_PROMPT },
-          { inline_data: { mime_type: 'image/jpeg', data: qs[index].base64 } }
-        ]
+          { inline_data: { mime_type: 'image/jpeg', data: qs[index].base64 } },
+        ],
       }]);
       const updated = processAiResponse(qs, index, text);
       setQuestions(updated);
     } catch (err) {
-      console.error('Soru analiz hatasi:', err);
+      console.error('Soru analiz hatası:', err);
       const updated = [...qs];
-      updated[index].explanation = err.message || 'Bilinmeyen bir hata olustu.';
+      updated[index].explanation = err.message || 'Bilinmeyen bir hata oluştu.';
       setQuestions(updated);
     }
     setLoading(false);
@@ -158,20 +166,22 @@ export default function QuestionScreen() {
     let updated = [...qs];
 
     for (let i = 0; i < qs.length; i++) {
-      setBatchProgress(`Soru ${i + 1}/${qs.length} cozuluyor...`);
+      setBatchProgress(`Soru ${i + 1}/${qs.length} çözülüyor...`);
       setCurrentIndex(i);
+
       try {
         const text = await callGeminiApi([{
           parts: [
             { text: SYSTEM_PROMPT },
-            { inline_data: { mime_type: 'image/jpeg', data: qs[i].base64 } }
-          ]
+            { inline_data: { mime_type: 'image/jpeg', data: qs[i].base64 } },
+          ],
         }]);
         updated = processAiResponse(updated, i, text);
       } catch (err) {
-        console.error(`Soru ${i + 1} hatasi:`, err);
-        updated[i].explanation = err.message || 'Bu soru cozulemedi.';
+        console.error(`Soru ${i + 1} hatası:`, err);
+        updated[i].explanation = err.message || 'Bu soru çözülemedi.';
       }
+
       setQuestions([...updated]);
     }
 
@@ -190,7 +200,7 @@ export default function QuestionScreen() {
 
     try {
       await supabase.from('sessions').insert({
-        subject: currentQ.subject || 'Diger',
+        subject: currentQ.subject || 'Diğer',
         topic: currentQ.topic || 'Belirsiz',
         is_correct: isCorrect,
         ai_explanation: currentQ.explanation.substring(0, 2000),
@@ -212,18 +222,19 @@ export default function QuestionScreen() {
     setQuestions([...updated]);
 
     try {
-      const contents = [];
-      contents.push({
-        role: 'user',
-        parts: [
-          { text: SYSTEM_PROMPT },
-          { inline_data: { mime_type: 'image/jpeg', data: currentQ.base64 } }
-        ]
-      });
-      contents.push({
-        role: 'model',
-        parts: [{ text: currentQ.explanation }]
-      });
+      const contents = [
+        {
+          role: 'user',
+          parts: [
+            { text: SYSTEM_PROMPT },
+            { inline_data: { mime_type: 'image/jpeg', data: currentQ.base64 } },
+          ],
+        },
+        {
+          role: 'model',
+          parts: [{ text: currentQ.explanation }],
+        },
+      ];
 
       for (const msg of updated[currentIndex].chat) {
         if (msg.role === 'user') {
@@ -240,8 +251,11 @@ export default function QuestionScreen() {
         setQuestions([...updated]);
       }
     } catch (err) {
-      console.error('Chat hatasi:', err);
-      updated[currentIndex].chat.push({ role: 'ai', text: err.message || 'Baglanti hatasi. Tekrar dene.' });
+      console.error('Chat hatası:', err);
+      updated[currentIndex].chat.push({
+        role: 'ai',
+        text: err.message || 'Bağlantı hatası. Tekrar dene.',
+      });
       setQuestions([...updated]);
     }
 
@@ -266,21 +280,21 @@ export default function QuestionScreen() {
         ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator
       >
-        <Text style={styles.title}>Soru Coz</Text>
+        <Text style={styles.title}>Soru Çöz</Text>
         <Text style={styles.subtitle}>
-          Tek fotograf cek veya galeriden birden fazla sec
+          Tek fotoğraf çek veya galeriden birden fazla seç
         </Text>
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.pickButton} onPress={takePhoto}>
-            <Text style={styles.pickButtonText}>Fotograf Cek</Text>
+            <Text style={styles.pickButtonText}>Fotoğraf Çek</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.pickButton} onPress={pickImages}>
             <Text style={styles.pickButtonText}>
-              Galeriden Sec {questions.length > 1 ? `(${questions.length})` : ''}
+              Galeriden Seç {questions.length > 1 ? `(${questions.length})` : ''}
             </Text>
           </TouchableOpacity>
         </View>
@@ -292,7 +306,7 @@ export default function QuestionScreen() {
               onPress={() => goToQuestion(-1)}
               disabled={currentIndex === 0}
             >
-              <Text style={styles.navButtonText}>Onceki</Text>
+              <Text style={styles.navButtonText}>Önceki</Text>
             </TouchableOpacity>
             <Text style={styles.navCounter}>
               {currentIndex + 1} / {questions.length}
@@ -321,7 +335,7 @@ export default function QuestionScreen() {
         {loading && !processingBatch && (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>AI dusunuyor...</Text>
+            <Text style={styles.loadingText}>AI düşünüyor...</Text>
           </View>
         )}
 
@@ -336,25 +350,25 @@ export default function QuestionScreen() {
             )}
 
             <View style={styles.explanationBox}>
-              <Text style={styles.explanationLabel}>AI Aciklamasi</Text>
+              <Text style={styles.explanationLabel}>AI Açıklaması</Text>
               <Text style={styles.explanationText}>{currentQ.explanation}</Text>
             </View>
 
             {!currentQ.saved && !processingBatch && (
               <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Bu soruyu dogru mu yapmistin?</Text>
+                <Text style={styles.resultLabel}>Bu soruyu doğru mu yapmıştın?</Text>
                 <View style={styles.resultButtons}>
                   <TouchableOpacity
                     style={[styles.resultButton, styles.correctButton]}
                     onPress={() => saveResult(true)}
                   >
-                    <Text style={[styles.resultButtonText, styles.correctButtonText]}>Dogru yaptim</Text>
+                    <Text style={[styles.resultButtonText, styles.correctButtonText]}>Doğru yaptım</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.resultButton, styles.wrongButton]}
                     onPress={() => saveResult(false)}
                   >
-                    <Text style={[styles.resultButtonText, styles.wrongButtonText]}>Yanlis yaptim</Text>
+                    <Text style={[styles.resultButtonText, styles.wrongButtonText]}>Yanlış yaptım</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -362,7 +376,7 @@ export default function QuestionScreen() {
 
             {currentQ.saved && (
               <View style={styles.savedBox}>
-                <Text style={styles.savedText}>Kaydedildi. Istatistiklerinde gorunecek.</Text>
+                <Text style={styles.savedText}>Kaydedildi. İstatistiklerinde görünecek.</Text>
               </View>
             )}
           </>
@@ -386,7 +400,7 @@ export default function QuestionScreen() {
         {chatLoading && (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.loadingText}>Cevap yaziliyor...</Text>
+            <Text style={styles.loadingText}>Cevap yazılıyor...</Text>
           </View>
         )}
       </ScrollView>
@@ -395,7 +409,7 @@ export default function QuestionScreen() {
         <View style={styles.chatInputRow}>
           <TextInput
             style={styles.chatInput}
-            placeholder="Anlamadigin yeri sor..."
+            placeholder="Anlamadığın yeri sor..."
             placeholderTextColor={colors.textSubtle}
             value={chatMessage}
             onChangeText={setChatMessage}
@@ -417,7 +431,7 @@ export default function QuestionScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { flex: 1, minHeight: 0 },
-  content: { flexGrow: 1, padding: 20, paddingTop: 10, paddingBottom: 160 },
+  content: { flexGrow: 1, padding: 20, paddingTop: 10, paddingBottom: 180 },
   title: { fontSize: 28, fontWeight: 'bold', color: colors.primary, marginBottom: 4 },
   subtitle: { fontSize: 14, color: colors.textMuted, marginBottom: 20 },
   buttonRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
