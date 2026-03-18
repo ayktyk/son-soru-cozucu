@@ -17,18 +17,34 @@ import { callGeminiApi } from '../config/api';
 import { supabase } from '../config/supabase';
 import { colors } from '../theme/colors';
 
-const SYSTEM_PROMPT = `Sen YKS'ye hazırlanan bir lise öğrencisinin en iyi arkadaşısın.
+const ENCOURAGEMENT_LINES = [
+  'Bu soru gözünü korkutabilir ama sakin kalınca parça parça çözülür.',
+  'Sorular duvar gibi görünür, üstüne gidince kapı gibi açılır.',
+  'Zor görünen soru da insandır; korkmadan bakınca mutlaka bir yerden çözülür.',
+  'Bu soru senden güçlü değil, sadece ilk bakışta biraz havalı duruyor.',
+  'Sorunun sert görünmesine aldanma; adım adım gidince eli yumuşar.',
+  'Her soru çözülmek için gelir, yeter ki kaçmadan üstünde biraz dur.',
+  'Korku soruyu büyütür, sakinlik soruyu küçültür.',
+  'Bu sorunun da bir zayıf noktası var; panik yapmadan ararsan bulursun.',
+  'Karışık görünen şeyler de tek tek bakınca sadeleşir.',
+  'Sorudan çekinme; sen yürüdükçe soru geri çekilir.',
+  'İlk anda büyük görünmesi normal, ama her büyük soru küçük adımlarla biter.',
+  'Bu soru seni yenmeye gelmedi; dikkatini toplamanı istemeye geldi.',
+];
+
+const buildSystemPrompt = (encouragementLine) => `Sen YKS'ye hazırlanan bir lise öğrencisinin en iyi arkadaşısın.
 Görevin bu soruyu çözmek değil, ÖĞRENCİNİN anlayıp kendisi çözmesini sağlamak.
 
 KURALLARIN:
 1. İlkokul 4. sınıf öğrencisine anlatır gibi konuş. Karmaşık kelime kullanma.
 2. Önce "Bu soru aslında şunu soruyor:" diye başla. Soruyu çok basit anlat.
-3. Öğrenci bu konudan korkuyorsa, "Bu soru senden çok daha kolay, seni kandırmaya çalışıyor" de.
-4. Adım adım çöz. Her adımı numaralandır.
-5. Sonunda "Bunun gibi sorularda şu noktaya dikkat et:" diye bir ipucu ver.
-6. Her zaman Türkçe yaz.
-7. Sonunda emojilerle teşvik et: "Bunu anladıysan Matematiğin büyük kısmını çözdün demektir!"
-8. CEVABININ EN SON SATIRINA şu formatta ders ve konu bilgisini yaz (bu satır öğrenciye gösterilmeyecek):
+3. Öğrenci bu konudan korkuyorsa, moral vermek için şu cümleyi doğal bir şekilde kullan: "${encouragementLine}"
+4. Kısa bir cümleyle, soruların korkmadan üzerine gidince çözülebildiğini hissettir.
+5. Adım adım çöz. Her adımı numaralandır.
+6. Sonunda "Bunun gibi sorularda şu noktaya dikkat et:" diye bir ipucu ver.
+7. Her zaman Türkçe yaz.
+8. Sonunda emojilerle teşvik et: "Bunu anladıysan Matematiğin büyük kısmını çözdün demektir!"
+9. CEVABININ EN SON SATIRINA şu formatta ders ve konu bilgisini yaz (bu satır öğrenciye gösterilmeyecek):
    [KONU: Ders Adı > Konu Adı]
    Örnek: [KONU: Matematik > Türev]
    Örnek: [KONU: Fizik > Newton Kanunları]
@@ -39,6 +55,21 @@ ASLA yapma:
 - "Bu trivial bir soru" veya "Açıkça görülüyor ki" gibi şeyler söyleme
 - Öğrenciyi aşağılama`;
 
+const pickEncouragement = (lastEncouragement, usedEncouragements = []) => {
+  const blocked = new Set([lastEncouragement, ...usedEncouragements].filter(Boolean));
+  let pool = ENCOURAGEMENT_LINES.filter((line) => !blocked.has(line));
+
+  if (pool.length === 0) {
+    pool = ENCOURAGEMENT_LINES.filter((line) => line !== lastEncouragement);
+  }
+
+  if (pool.length === 0) {
+    pool = ENCOURAGEMENT_LINES;
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
+};
+
 export default function QuestionScreen() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,8 +79,22 @@ export default function QuestionScreen() {
   const [chatMessage, setChatMessage] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const scrollRef = useRef(null);
+  const lastEncouragementRef = useRef('');
 
   const currentQ = questions[currentIndex] || null;
+
+  const attachEncouragements = (items) => {
+    const usedEncouragements = [];
+
+    return items.map((item) => {
+      const encouragement = pickEncouragement(lastEncouragementRef.current, usedEncouragements);
+      usedEncouragements.push(encouragement);
+      lastEncouragementRef.current = encouragement;
+      return { ...item, encouragement };
+    });
+  };
+
+  const getSystemPrompt = (question) => buildSystemPrompt(question?.encouragement || ENCOURAGEMENT_LINES[0]);
 
   const optimizeImage = async (asset) => {
     const maxDimension = 1400;
@@ -75,6 +120,7 @@ export default function QuestionScreen() {
       explanation: '',
       subject: '',
       topic: '',
+      encouragement: '',
       chat: [],
       saved: false,
     };
@@ -102,7 +148,8 @@ export default function QuestionScreen() {
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const newQuestions = await Promise.all(result.assets.map(optimizeImage));
+      const optimizedQuestions = await Promise.all(result.assets.map(optimizeImage));
+      const newQuestions = attachEncouragements(optimizedQuestions);
       setQuestions(newQuestions);
       setCurrentIndex(0);
 
@@ -124,7 +171,7 @@ export default function QuestionScreen() {
 
     if (!result.canceled) {
       const optimizedQuestion = await optimizeImage(result.assets[0]);
-      const newQuestions = [optimizedQuestion];
+      const newQuestions = attachEncouragements([optimizedQuestion]);
       setQuestions(newQuestions);
       setCurrentIndex(0);
       analyzeSingle(newQuestions, 0);
@@ -143,9 +190,10 @@ export default function QuestionScreen() {
   const analyzeSingle = async (qs, index) => {
     setLoading(true);
     try {
+      const systemPrompt = getSystemPrompt(qs[index]);
       const text = await callGeminiApi([{
         parts: [
-          { text: SYSTEM_PROMPT },
+          { text: systemPrompt },
           { inline_data: { mime_type: 'image/jpeg', data: qs[index].base64 } },
         ],
       }]);
@@ -170,9 +218,10 @@ export default function QuestionScreen() {
       setCurrentIndex(i);
 
       try {
+        const systemPrompt = getSystemPrompt(qs[i]);
         const text = await callGeminiApi([{
           parts: [
-            { text: SYSTEM_PROMPT },
+            { text: systemPrompt },
             { inline_data: { mime_type: 'image/jpeg', data: qs[i].base64 } },
           ],
         }]);
@@ -222,11 +271,12 @@ export default function QuestionScreen() {
     setQuestions([...updated]);
 
     try {
+      const systemPrompt = getSystemPrompt(currentQ);
       const contents = [
         {
           role: 'user',
           parts: [
-            { text: SYSTEM_PROMPT },
+            { text: systemPrompt },
             { inline_data: { mime_type: 'image/jpeg', data: currentQ.base64 } },
           ],
         },
@@ -329,6 +379,13 @@ export default function QuestionScreen() {
         {currentQ && (
           <Image source={{ uri: currentQ.uri }} style={styles.preview} resizeMode="contain" />
         )}
+
+        {currentQ?.encouragement ? (
+          <View style={styles.encouragementBox}>
+            <Text style={styles.encouragementLabel}>Korkmadan git</Text>
+            <Text style={styles.encouragementText}>{currentQ.encouragement}</Text>
+          </View>
+        ) : null}
 
         {loading && !processingBatch && (
           <View style={styles.loadingBox}>
@@ -479,6 +536,29 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  encouragementBox: {
+    backgroundColor: colors.primaryGlow,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    ...colors.shadowCard,
+  },
+  encouragementLabel: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  encouragementText: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 24,
+    fontWeight: '600',
   },
   loadingBox: { alignItems: 'center', paddingVertical: 24 },
   loadingText: { color: colors.textMuted, marginTop: 10, fontSize: 14, fontWeight: '500' },
