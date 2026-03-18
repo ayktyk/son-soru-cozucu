@@ -5,6 +5,7 @@ import {
   Platform, StyleSheet
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { callGeminiApi } from '../config/api';
 import { supabase } from '../config/supabase';
 import { colors } from '../theme/colors';
@@ -43,6 +44,35 @@ export default function QuestionScreen() {
 
   const currentQ = questions[currentIndex] || null;
 
+  const optimizeImage = async (asset) => {
+    const maxDimension = 1400;
+    const width = asset.width || maxDimension;
+    const height = asset.height || maxDimension;
+    const scale = Math.min(1, maxDimension / Math.max(width, height));
+    const resizedWidth = Math.max(1, Math.round(width * scale));
+    const resizedHeight = Math.max(1, Math.round(height * scale));
+
+    const optimized = await manipulateAsync(
+      asset.uri,
+      [{ resize: { width: resizedWidth, height: resizedHeight } }],
+      {
+        compress: 0.55,
+        format: SaveFormat.JPEG,
+        base64: true,
+      }
+    );
+
+    return {
+      uri: optimized.uri,
+      base64: optimized.base64,
+      explanation: '',
+      subject: '',
+      topic: '',
+      chat: [],
+      saved: false,
+    };
+  };
+
   const parseSubjectTopic = (text) => {
     const match = text.match(/\[KONU:\s*(.+?)\s*>\s*(.+?)\s*\]/);
     if (match) {
@@ -59,21 +89,12 @@ export default function QuestionScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      base64: true,
-      quality: 0.7,
+      quality: 0.5,
       selectionLimit: 30,
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const newQuestions = result.assets.map((asset) => ({
-        uri: asset.uri,
-        base64: asset.base64,
-        explanation: '',
-        subject: '',
-        topic: '',
-        chat: [],
-        saved: false,
-      }));
+      const newQuestions = await Promise.all(result.assets.map(optimizeImage));
       setQuestions(newQuestions);
       setCurrentIndex(0);
 
@@ -90,20 +111,12 @@ export default function QuestionScreen() {
     if (!permission.granted) return;
 
     const result = await ImagePicker.launchCameraAsync({
-      base64: true,
-      quality: 0.7,
+      quality: 0.5,
     });
 
     if (!result.canceled) {
-      const newQuestions = [{
-        uri: result.assets[0].uri,
-        base64: result.assets[0].base64,
-        explanation: '',
-        subject: '',
-        topic: '',
-        chat: [],
-        saved: false,
-      }];
+      const optimizedQuestion = await optimizeImage(result.assets[0]);
+      const newQuestions = [optimizedQuestion];
       setQuestions(newQuestions);
       setCurrentIndex(0);
       analyzeSingle(newQuestions, 0);
